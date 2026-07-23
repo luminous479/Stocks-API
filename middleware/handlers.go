@@ -66,8 +66,43 @@ func CreateStock(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func GetAllStocks() {
+func GetAllStocks(w http.ResponseWriter, r *http.Request) {
+	stocks, err := getAllStocks()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(stocks)	
+
+}
+func getAllStocks() ([]models.Stock, error) {
+
+	db := CreateConnection()
+	defer db.Close()
+
+	rows, err := db.Query("SELECT stockid, name, price, company FROM stocks")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var stocks []models.Stock
+	for rows.Next() {
+		var stock models.Stock
+		err := rows.Scan(&stock.StockID, &stock.Name, &stock.Price, &stock.Company)
+		if err != nil {
+			return nil, err
+		}
+		stocks = append(stocks, stock)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return stocks, nil	
 }
 
 func GetStocks(w http.ResponseWriter, r *http.Request) {
