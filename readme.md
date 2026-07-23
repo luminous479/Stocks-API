@@ -9,9 +9,7 @@ A simple RESTful API built with **Golang**, **Gorilla Mux**, and **Postgress** t
 - Get all stocks
 - Update a stock
 - Delete a stock
-- MySQL database integration
-- Environment variable configuration using `.env`
-- RESTful API architecture
+- Postgresql database integration
 
 ---
 
@@ -19,8 +17,7 @@ A simple RESTful API built with **Golang**, **Gorilla Mux**, and **Postgress** t
 
 - Go (Golang)
 - Gorilla Mux
-- MySQL
-- godotenv
+- Postgresql
 
 ---
 
