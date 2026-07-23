@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"github.com/luminous479/Stocks-API/models"
 )
@@ -69,7 +70,27 @@ func GetAllStocks() {
 
 }
 
-func GetStocks() {
+func GetStocks(w http.ResponseWriter, r *http.Request) {
+
+	params := mux.Vars(r)
+	stockID := params["id"]
+
+	db := CreateConnection()
+	defer db.Close()
+
+	var stock models.Stock
+	err := db.QueryRow("SELECT stockid, name, price, company FROM stocks WHERE stockid = ?", stockID).Scan(&stock.StockID, &stock.Name, &stock.Price, &stock.Company)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			http.Error(w, "Stock not found", http.StatusNotFound)
+		} else {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(stock)
 
 }
 
