@@ -129,10 +129,48 @@ func GetStocks(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func UpdateStock() {
+func UpdateStock(w http.ResponseWriter, r *http.Request) {
+
+	params := mux.Vars(r)
+	stockID := params["id"]
+
+	var stock models.Stock
+	err := json.NewDecoder(r.Body).Decode(&stock)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	db := CreateConnection()
+	defer db.Close()
+
+	result, err := db.Exec("UPDATE stocks SET name = ?, price = ?, company = ? WHERE stockid = ?", stock.Name, stock.Price, stock.Company, stockID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if rowsAffected == 0 {
+		http.Error(w, "Stock not found", http.StatusNotFound)
+		return
+	}
+
+	response := response{
+		Message: "Stock updated successfully",
+	}
+
+	w.Header().Set("Content-Type",	 "application/json")
+	json.NewEncoder(w).Encode(response)	
+
 
 }
 
-func DeleteStock() {
+func DeleteStock(w http.ResponseWriter, r *http.Request	) {
 
 }
