@@ -2,10 +2,13 @@ package middleware
 
 import (
 	"database/sql"
+	"encoding/json"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
+	"github.com/luminous479/Stocks-API/models"
 )
 
 type response struct {
@@ -27,4 +30,53 @@ func CreateConnection() *sql.DB {
 	return db
 }
 
+func CreateStock(w http.ResponseWriter, r *http.Request) {
 
+	var stock models.Stock
+
+	err := json.NewDecoder(r.Body).Decode(&stock)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	db := CreateConnection()
+	defer db.Close()
+
+	result, err := db.Exec("INSERT INTO stocks (stockid, name, price, company) VALUES (?, ?, ?, ?)", stock.StockID, stock.Name, stock.Price, stock.Company)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	response := response{
+		ID:      id,
+		Message: "Stock created successfully",
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+
+}
+
+func GetAllStocks() {
+
+}
+
+func GetStocks() {
+
+}
+
+func UpdateStock() {
+
+}
+
+func DeleteStock() {
+
+}
