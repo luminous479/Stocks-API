@@ -74,7 +74,7 @@ func GetAllStocks(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(stocks)	
+	json.NewEncoder(w).Encode(stocks)
 
 }
 func getAllStocks() ([]models.Stock, error) {
@@ -102,7 +102,7 @@ func getAllStocks() ([]models.Stock, error) {
 		return nil, err
 	}
 
-	return stocks, nil	
+	return stocks, nil
 }
 
 func GetStocks(w http.ResponseWriter, r *http.Request) {
@@ -165,12 +165,41 @@ func UpdateStock(w http.ResponseWriter, r *http.Request) {
 		Message: "Stock updated successfully",
 	}
 
-	w.Header().Set("Content-Type",	 "application/json")
-	json.NewEncoder(w).Encode(response)	
-
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 
 }
 
-func DeleteStock(w http.ResponseWriter, r *http.Request	) {
+func DeleteStock(w http.ResponseWriter, r *http.Request) {
+
+	params := mux.Vars(r)
+	stockID := params["id"]
+
+	db := CreateConnection()
+	defer db.Close()
+
+	result, err := db.Exec("DELETE FROM stocks WHERE stockid = ?", stockID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if rowsAffected == 0 {
+		http.Error(w, "Stock not found", http.StatusNotFound)
+		return
+	}
+
+	response := response{
+		Message: "Stock deleted successfully",
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)	
 
 }
